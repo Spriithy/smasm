@@ -3,6 +3,8 @@
 #include <string.h>
 #include "include/colors.h"
 
+#define IS_LABEL(s) (s[strlen(s) - 1] == ':' ? 1 : 0)
+
 static void gen_error(Compiler* c, char* message) {
   if (c->errcount >= COMPILER_MAX_ERRCOUNT) {
     ERROR("too many errors:");
@@ -15,13 +17,25 @@ static void gen_error(Compiler* c, char* message) {
 
 static void parse_labels(Compiler* c) {
   FILE* file = fopen(c->path, "r");
-  char line[80], lbl[80];
-  int ln = 0;
-  while ((fgets(line, 80, file)) != NULL) {
-    printf(COLOR_BLUE "%s:" COLOR_YELLOW "%03d" COLOR_NONE ": %s", c->path, ln,
-           line);
+
+  if (file == NULL) {
+    printf(COLOR_RED "error: " COLOR_NONE "no such file: '%s'\n", c->path);
+    exit(1);
+  }
+
+  int ln = 1;
+  char line[256] = {0}, tok[32] = {0};
+
+  while (fgets(line, 256, file) != NULL) {
+    sscanf(line, " %s", tok);
+
+    if (IS_LABEL(tok)) {
+      tok[strlen(tok) - 1] = 0;
+      printf("Label '%s' on line %d\n", tok, ln);
+    }
     ln++;
   }
+
   fclose(file);
 }
 
@@ -31,7 +45,14 @@ void compile(char* path, int verbose) {
   c->errcount = 0;
   c->line = 1;
   c->input = fopen(path, "r");
-  c->output = fopen("a.out", "w+");
+
+  if (c->input == NULL) {
+    printf(COLOR_RED "error: " COLOR_NONE "no such file: '%s'\n", c->path);
+    exit(1);
+  }
+  fclose(c->input);
+
   c->verbose = verbose;
+
   parse_labels(c);
 }
