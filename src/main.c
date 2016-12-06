@@ -19,14 +19,16 @@ void usage() {
 
 int main(int argc, char *argv[]) {
   srand(time(NULL));
+
+  printf("%d\n", argc);
+  for (int i = 0; i < argc; i++) puts(argv[i]);
+
   switch (argc) {
     case 1:
       goto error;
     default:
-      if (strlen(argv[1]) != 2 || argv[1][0] != '-') {
-        printf("unrecognized option: " COLOR_RED "%s\n" COLOR_NONE, argv[1]);
-        goto error;
-      }
+      if (strlen(argv[1]) != 2 || argv[1][0] != '-')
+        ERROR("unrecognized option: " COLOR_RED "%s\n" COLOR_NONE, argv[1]);
 
       switch (argv[1][1]) {
         case 'h':
@@ -35,27 +37,22 @@ int main(int argc, char *argv[]) {
           break;
         case 'e':
           // Execute input files
-          if (argc - 2 <= 0) {
-            printf(ASM_NAME ": " COLOR_RED "error: " COLOR_NONE
-                            "no input files\n");
-            return 1;
-          }
+          if (argc - 2 <= 0) ERROR("no input files%s\n", "");
+
+          puts("Executing file.");
 
           break;
         case 'c':
           // Parse and compile input files
-          if (argc - 2 <= 0) {
-            printf(ASM_NAME ": " COLOR_RED "error: " COLOR_NONE
-                            "no input files\n");
-            return 1;
-          }
+          if (argc - 2 <= 0) ERROR("no input files%s\n", "");
 
-          compile(argv[2], 0);
+          puts("Compiling file.");
+
+          compile(argv[2], 1);
 
           break;
         default:
-          printf("unrecognized option: " COLOR_RED "%s\n" COLOR_NONE, argv[1]);
-          goto error;
+          ERROR("unrecognized option: %s\n", argv[1]);
       }
   }
 
@@ -63,5 +60,5 @@ int main(int argc, char *argv[]) {
 
 error:
   usage();
-  return 1;
+  exit(1);
 }

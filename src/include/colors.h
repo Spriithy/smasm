@@ -12,8 +12,8 @@
 #define COLOR_CYAN "\x1b[36m"
 #define COLOR_NONE "\x1b[0m"
 
-#define ERROR(s)                                    \
-  printf(COLOR_RED "error: " COLOR_NONE "%s\n", s); \
+#define ERROR(fmt, ...)                                         \
+  printf(COLOR_RED "error: " COLOR_NONE fmt "\n", __VA_ARGS__); \
   exit(1)
 
 #define LOG(s) printf(COLOR_BLUE "log: " COLOR_NONE s "\n");

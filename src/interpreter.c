@@ -60,7 +60,7 @@ int itp_execute(Interpreter *itp) {
 }
 
 word itp_pop(Interpreter *itp) {
-  if (itp->sp <= 0) ERROR("stack is empty");
+  if (itp->sp <= 0) ERROR("stack is empty%s", "");
   return itp->stack[--itp->sp];
 }
 

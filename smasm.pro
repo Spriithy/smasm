@@ -6,14 +6,12 @@ QMAKE_CXXFLAGS += -std=c99
 
 SOURCES += src/main.c \
     src/opcodes.c \
-    src/interpreter.c \
-    src/compiler.c
+    src/interpreter.c
 
 HEADERS += \
     src/include/colors.h \
     src/include/opcodes.h \
-    src/include/interpreter.h \
-    src/include/compiler.h
+    src/include/interpreter.h
 
 DISTFILES += \
     test.s
