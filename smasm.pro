@@ -14,3 +14,6 @@ HEADERS += \
     src/include/opcodes.h \
     src/include/interpreter.h \
     src/include/compiler.h
+
+DISTFILES += \
+    test.s

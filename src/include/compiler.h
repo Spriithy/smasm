@@ -12,8 +12,8 @@ typedef struct {
 } error;
 
 typedef struct {
-  char* name;
   int line;
+  char* name;
 } Label;
 
 typedef struct {
@@ -23,6 +23,7 @@ typedef struct {
   FILE *input, *output;
 
   int line;
+  int lblcount;
   Label* labels;
 
   int errcount;

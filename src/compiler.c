@@ -26,33 +26,34 @@ static void parse_labels(Compiler* c) {
   int ln = 1;
   char line[256] = {0}, tok[32] = {0};
 
+  c->labels = malloc(1 * sizeof(Label));
+
   while (fgets(line, 256, file) != NULL) {
     sscanf(line, " %s", tok);
 
     if (IS_LABEL(tok)) {
       tok[strlen(tok) - 1] = 0;
-      printf("Label '%s' on line %d\n", tok, ln);
+      c->labels[c->lblcount] = (Label){ln, NULL};
+      c->labels[c->lblcount].name = (char*)malloc(strlen(tok) * sizeof(char));
+      strcpy(c->labels[c->lblcount].name, tok);
+      c->lblcount++;
+      c->labels = (Label*)realloc(c->labels, (c->lblcount + 1) * sizeof(Label));
     }
     ln++;
   }
 
   fclose(file);
+
+  for (int i = 0; i < c->lblcount; i++)
+    printf("%d: '%s'\n", c->labels[i].line, c->labels[i].name);
 }
 
 void compile(char* path, int verbose) {
   Compiler* c = calloc(1, sizeof(Compiler));
-  c->path = path;
-  c->errcount = 0;
-  c->line = 1;
-  c->input = fopen(path, "r");
-
-  if (c->input == NULL) {
-    printf(COLOR_RED "error: " COLOR_NONE "no such file: '%s'\n", c->path);
-    exit(1);
-  }
-  fclose(c->input);
-
   c->verbose = verbose;
+  c->errcount = 0;
+  c->path = path;
+  c->line = 1;
 
   parse_labels(c);
 }
