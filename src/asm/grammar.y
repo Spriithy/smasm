@@ -2,6 +2,9 @@
 
 #include <stdio.h>
 
+#include "procedure.h"
+#include "label.h"
+
 %}
 
 %union {
@@ -45,7 +48,6 @@ stat
     | DUP
     | OP INT
     | HALT
-    | error NL
     ;
 
 %%
@@ -55,13 +57,13 @@ extern int yylineno;
 extern FILE* yyin;
 
 int main(void) {
-    yyin = fopen("../../test.s", "r");
+    yyin = fopen("../../tests/test.s", "r");
     do {
         yyparse();
     } while(!feof(yyin));
     return 0;
 }
 
-void yyerror(const char *s) {
+yyerror(const char *s) {
     printf("%d: %s\n", yylineno, s);
 }
