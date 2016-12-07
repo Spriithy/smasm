@@ -1,5 +1,6 @@
-ici:  read	1000
-      push	1000
+.start
+ici:  read	1000  ; Load from memory
+      push	1000  ; Store
       push#	0
       op	0
       jpc	fin
