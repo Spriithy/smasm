@@ -1,8 +1,18 @@
 %{
 
+#include <stdio.h>
+
 %}
 
-%token NUM ID
+%union {
+    int  num;
+    char *ident;
+}
+
+%token <num> INT 
+%token <ident> IDENT
+%token COMMA RPAR LPAR
+
 %token LBL PROC
 %token POP IPOP PUSH IPUSH PUSHS
 %token CALL RET JPC JMP
@@ -14,23 +24,26 @@
 %%
 
 program
-    : PROC NL stat_list { printf("program\n"); }
-    ;
-
-stat_list
-    : stat NL
-    | stat_list stat NL
+    : stat program
     ;
 
 stat
-    : POP INT { printf("pop int\n"); }
+    :
     ;
 
 %%
 
+extern FILE* yyin;
+
 int main(void) {
+    yyin = fopen("../../test.s", "r");
     do {
         yyparse();
     } while(!feof(yyin));
     return 0;
+}
+
+int yyerror(char *s) {
+    printf("%s\n", s);
+    return 1;
 }

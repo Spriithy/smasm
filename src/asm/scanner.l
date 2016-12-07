@@ -8,50 +8,106 @@ int linecount;
 
 %}
 
+%option noyywrap
+
+HEX    0[xX][a-fA-F0-9]+
 NUMBER [0-9]+
 IDENT  [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
 
-";".*   { printf("nice comment (%s)\n", yytext + 1); }
-
+";".*   ;
 [ \t\r] ;
+  
+\n {
+    linecount++;
+    return NL;
+}
 
-"."     { printf("nice dot\n"); }
-":"     { printf("nice colon\n"); }
-\n      { printf("new line\n"); linecount++; return NL; }
+NUMBER {
+    sscanf(yytext, "%d", &yylval.num);
+    return INT;
+}
 
-[0-9]+  { printf("nice number %s\n", yytext); return NUM; }
+HEX {
+    sscanf(yytext, "%x", &yylval.num);
+    return INT;
+}
 
-pop     { printf("POP\n"); return POP; }
-push"#" { printf("PUSHS\n"); return PUSHS; }
-push    { printf("PUSH\n"); return PUSH; }
-ipop    { printf("IPOP\n"); return IPOP; }
-ipush   { printf("IPUSH\n"); return IPUSH; }
-call    { printf("CALL\n"); return CALL; }
-ret     { printf("RET\n"); return RET; }
-jmp     { printf("JMP\n"); return JMP; }
-jpc     { printf("JPC\n"); return JPC; }
-write   { printf("WRITE\n"); return WRITE; }
-read    { printf("READ\n"); return READ; }
-rand    { printf("RAND\n"); return RAND; }
-dup     { printf("DUP\n"); return DUP; }
-op      { printf("OP\n"); return OP; }
-halt    { printf("HALT\n"); return HALT; }
+pop     {
+    return POP;
+}
+
+push"#" {
+    return PUSHS;
+}
+
+push {
+    return PUSH;
+}
+
+ipop {
+    return IPOP;
+}
+
+ipush {
+    return IPUSH;
+}
+
+call {
+    return CALL;
+}
+
+ret {
+    return RET;
+}
+
+jmp {
+    return JMP;
+}
+
+jpc {
+    return JPC;
+}
+
+write {
+    return WRITE;
+}
+
+read {
+    return READ;
+}
+
+rand {
+    return RAND;
+}
+
+dup {
+    return DUP;
+}
+
+op {
+    return OP;
+}
+
+halt {
+    return HALT;
+}
 
 ^"."[a-zA-Z_][a-zA-Z0-9_]* {
-    printf("nice procedure (%s)\n", yytext + 1);
+    yytext++;
+    strcpy(yylval.ident, yytext);
     return PROC;
 }
 
 ^[a-zA-Z_][a-zA-Z0-9_]*":" {
     yytext[strlen(yytext) - 1] = 0;
-    printf("nice label (%s)\n", yytext);
+    strcpy(yylval.ident, yytext);
     return LBL;
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-    printf("nice identifier (%s)\n", yytext);
+    strcpy(yylval.ident, yytext);
     return IDENT;
 }
 
