@@ -4,15 +4,10 @@
 #include <stdlib.h>
 #include "grammar.tab.h"
 
-int linecount;
-
 %}
 
+%option yylineno
 %option noyywrap
-
-HEX    0[xX][a-fA-F0-9]+
-NUMBER [0-9]+
-IDENT  [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
 
@@ -20,16 +15,15 @@ IDENT  [a-zA-Z_][a-zA-Z0-9_]*
 [ \t\r] ;
   
 \n {
-    linecount++;
     return NL;
 }
 
-NUMBER {
+[0-9]+ {
     sscanf(yytext, "%d", &yylval.num);
     return INT;
 }
 
-HEX {
+0[xX][0-9a-fA-F]+ {
     sscanf(yytext, "%x", &yylval.num);
     return INT;
 }
@@ -96,17 +90,22 @@ halt {
 
 ^"."[a-zA-Z_][a-zA-Z0-9_]* {
     yytext++;
+    yylval.ident = malloc(strlen(yytext) * sizeof(char));
     strcpy(yylval.ident, yytext);
+
     return PROC;
 }
 
 ^[a-zA-Z_][a-zA-Z0-9_]*":" {
     yytext[strlen(yytext) - 1] = 0;
+    yylval.ident = malloc(strlen(yytext) * sizeof(char));
     strcpy(yylval.ident, yytext);
+
     return LBL;
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
+    yylval.ident = malloc(strlen(yytext) * sizeof(char));
     strcpy(yylval.ident, yytext);
     return IDENT;
 }

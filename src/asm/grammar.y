@@ -24,14 +24,32 @@
 %%
 
 program
-    : stat program
+    :
+    | stat NL program
     ;
 
 stat
-    :
+    : PROC      { printf("found a procedure\n"); }
+    | LBL stat  { printf("found a labeled stat\n"); }
+    | POP INT
+    | PUSH INT
+    | PUSHS INT
+    | IPOP
+    | IPUSH
+    | CALL IDENT
+    | JMP IDENT
+    | JPC IDENT
+    | READ INT  
+    | WRITE INT
+    | RAND INT
+    | DUP
+    | OP INT
+    | HALT
     ;
 
 %%
+
+extern int yylineno;
 
 extern FILE* yyin;
 
@@ -44,6 +62,6 @@ int main(void) {
 }
 
 int yyerror(char *s) {
-    printf("%s\n", s);
+    printf("%d: %s\n", yylineno, s);
     return 1;
 }
