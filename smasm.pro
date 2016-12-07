@@ -14,4 +14,6 @@ HEADERS += \
     src/include/interpreter.h
 
 DISTFILES += \
-    test.s
+    test.s \
+    src/scanner.l \
+    src/parser.y
