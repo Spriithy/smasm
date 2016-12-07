@@ -24,7 +24,7 @@
 %%
 
 program
-    :
+    : %empty
     | stat NL program
     ;
 
@@ -45,6 +45,7 @@ stat
     | DUP
     | OP INT
     | HALT
+    | error NL
     ;
 
 %%
@@ -61,7 +62,6 @@ int main(void) {
     return 0;
 }
 
-int yyerror(char *s) {
+void yyerror(const char *s) {
     printf("%d: %s\n", yylineno, s);
-    return 1;
 }
