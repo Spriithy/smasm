@@ -1,9 +1,15 @@
 %{
 
 #include <stdio.h>
+#include "symtable.h"
 
-#include "procedure.h"
-#include "label.h"
+extern int yylex(void);
+
+extern int yylineno;
+extern FILE* yyin;
+
+S_TABLE *procedures;
+S_TABLE *labels;
 
 %}
 
@@ -16,7 +22,7 @@
 %token <ident> IDENT
 %token COMMA RPAR LPAR
 
-%token LBL PROC
+%token <ident> LBL PROC
 %token POP IPOP PUSH IPUSH PUSHS
 %token CALL RET JPC JMP
 %token READ WRITE
@@ -32,7 +38,10 @@ program
     ;
 
 stat
-    : PROC      { printf("found a procedure\n"); }
+    : PROC {
+        printf("found a procedure\n");
+        add_sym_entry(procedures, $1, yylineno);
+    }
     | LBL stat  { printf("found a labeled stat\n"); }
     | POP INT
     | PUSH INT
@@ -52,15 +61,18 @@ stat
 
 %%
 
-extern int yylineno;
-
-extern FILE* yyin;
-
 int main(void) {
     yyin = fopen("../../tests/test.s", "r");
+    procedures = new_sym_table();
+    labels = new_sym_table();
+
     do {
         yyparse();
     } while(!feof(yyin));
+
+    for (int i = 0; i < procedures->size; i++)
+        printf("PROCEDURE '%s' at PC = %d\n", procedures->syms[i], procedures->ofs[i]);
+
     return 0;
 }
 
