@@ -1,8 +1,7 @@
 %{
 
 #include <stdio.h>
-#include "symtable.h"
-#include "gen.h"
+#include "ast.h"
 
 extern int yylex(void);
 
@@ -10,8 +9,8 @@ extern int yylineno;
 extern FILE* yyin;
 extern FILE* yyout;
 
-S_TABLE *procedures;
-S_TABLE *labels;
+S_TABLE *labels; // TODO finish implementation
+node *ast_head, *ast_tail;
 
 %}
 
@@ -22,13 +21,12 @@ S_TABLE *labels;
 
 %token <num> INT 
 %token <ident> IDENT
-%token COMMA RPAR LPAR
 
-%token <ident> LBL PROC
-%token POP IPOP PUSH IPUSH PUSHS
-%token CALL RET JPC JMP
-%token READ WRITE
-%token RAND DUP OP HALT
+%token <ident> TOKEN_LBL TOKEN_PROC
+%token TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
+%token TOKEN_CALL TOKEN_RET TOKEN_JPC TOKEN_JMP
+%token TOKEN_READ TOKEN_WRITE
+%token TOKEN_RAND TOKEN_DUP TOKEN_OP TOKEN_HALT
 
 %token NL
 
@@ -40,56 +38,73 @@ program
     ;
 
 stat
-    : PROC {
-        add_sym_entry(procedures, $1, yylineno);
+    : TOKEN_PROC {
+        ast_tail->next = new_ph(PRC, $1, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | LBL stat { 
-        add_sym_entry(labels, $1, yylineno);
+    | TOKEN_LBL stat { 
+        ast_tail->next = new_ph(LBL, $1, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | POP INT {
-        gen_instr(yyout, 0, $2);
+    | TOKEN_POP INT {
+        ast_tail->next = new_instr(POP, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | PUSH INT {
-        gen_instr(yyout, 1, $2);
+    | TOKEN_PUSH INT {
+        ast_tail->next = new_instr(PUSH, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | PUSHS INT {
-        gen_instr(yyout, 4, $2);
+    | TOKEN_PUSHS INT {
+        ast_tail->next = new_instr(PUSHS, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | IPOP {
-        gen_sym(yyout, 2);
+    | TOKEN_IPOP {
+        ast_tail->next = new_instr(IPOP, 0, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | IPUSH {
-        gen_sym(yyout, 3);
+    | TOKEN_IPUSH {
+        ast_tail->next = new_instr(IPUSH, 0, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | CALL IDENT {
-        gen_instr(yyout, 5, get_sym_offset(procedures, $2));
+    | TOKEN_CALL IDENT {
+        ast_tail->next = new_ctrl(CALL, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | RET {
-        gen_sym(yyout, 6);
+    | TOKEN_RET {
+        ast_tail->next = new_instr(RET, 0, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | JMP IDENT {
-        gen_instr(yyout, 7, get_sym_offset(labels, $2));
+    | TOKEN_JMP IDENT {
+        ast_tail->next = new_ctrl(JMP, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | JPC IDENT {
-        gen_instr(yyout, 8, get_sym_offset(labels, $2));
+    | TOKEN_JPC IDENT {
+        ast_tail->next = new_ctrl(JPC, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | WRITE INT {
-        gen_instr(yyout, 9, $2);
+    | TOKEN_WRITE INT {
+        ast_tail->next = new_instr(WRITE, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | READ INT {
-        gen_instr(yyout, 10, $2);
+    | TOKEN_READ INT {
+        ast_tail->next = new_instr(READ, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | RAND INT {
-        gen_instr(yyout, 11, $2);
+    | TOKEN_RAND INT {
+        ast_tail->next = new_instr(RND, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | DUP {
-        gen_sym(yyout, 12);
+    | TOKEN_DUP {
+        ast_tail->next = new_instr(DUP, 0, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | OP INT {
-        gen_instr(yyout, 13, $2);
+    | TOKEN_OP INT {
+        ast_tail->next = new_instr(OP, $2, yylineno);
+        ast_tail = ast_tail->next;
     }
-    | HALT {
-        gen_sym(yyout, 99);
+    | TOKEN_HALT {
+        ast_tail->next = new_instr(HALT, 0, yylineno);
+        ast_tail = ast_tail->next;
     }
     ;
 
@@ -99,20 +114,16 @@ int main(void) {
     yyin = fopen("../../tests/test.s", "r");
     yyout = fopen("a.out", "w+");
 
-    procedures = new_sym_table();
-    labels = new_sym_table();
+    ast_head = new_ph(VOID, "<start>", 0);
+    ast_tail = ast_head;
 
     do {
         yyparse();
     } while(!feof(yyin));
 
-    printf("PROCEDURES:\n");
-    for (int i = 0; i < procedures->size; i++)
-        printf("  '%s' : %d\n", procedures->syms[i], procedures->ofs[i]);
-
-    printf("LABELS:\n");
-    for (int i = 0; i < labels->size; i++)
-        printf("  '%s' : %d\n", labels->syms[i], labels->ofs[i]);
+    node *p = ast_head;
+    while ((p = p->next) != NULL)
+        emit(p, ast_head, yyout);
 
     return 0;
 }

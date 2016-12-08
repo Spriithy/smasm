@@ -29,63 +29,63 @@
 }
 
 pop     {
-    return POP;
+    return TOKEN_POP;
 }
 
 push"#" {
-    return PUSHS;
+    return TOKEN_PUSHS;
 }
 
 push {
-    return PUSH;
+    return TOKEN_PUSH;
 }
 
 ipop {
-    return IPOP;
+    return TOKEN_IPOP;
 }
 
 ipush {
-    return IPUSH;
+    return TOKEN_IPUSH;
 }
 
 call {
-    return CALL;
+    return TOKEN_CALL;
 }
 
 ret {
-    return RET;
+    return TOKEN_RET;
 }
 
 jmp {
-    return JMP;
+    return TOKEN_JMP;
 }
 
 jpc {
-    return JPC;
+    return TOKEN_JPC;
 }
 
 write {
-    return WRITE;
+    return TOKEN_WRITE;
 }
 
 read {
-    return READ;
+    return TOKEN_READ;
 }
 
 rand {
-    return RAND;
+    return TOKEN_RAND;
 }
 
 dup {
-    return DUP;
+    return TOKEN_DUP;
 }
 
 op {
-    return OP;
+    return TOKEN_OP;
 }
 
 halt {
-    return HALT;
+    return TOKEN_HALT;
 }
 
 ^"."[a-zA-Z_][a-zA-Z0-9_]* {
@@ -93,7 +93,7 @@ halt {
     yylval.ident = malloc(strlen(yytext) * sizeof(char));
     strcpy(yylval.ident, yytext);
 
-    return PROC;
+    return TOKEN_PROC;
 }
 
 ^[a-zA-Z_][a-zA-Z0-9_]*":" {
@@ -101,7 +101,7 @@ halt {
     yylval.ident = malloc(strlen(yytext) * sizeof(char));
     strcpy(yylval.ident, yytext);
 
-    return LBL;
+    return TOKEN_LBL;
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
