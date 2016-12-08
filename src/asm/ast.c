@@ -51,7 +51,7 @@ int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
     case CALL: {
         if ((ofs = get_sym_offset(prcs, n->name)) == -1) {
             printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE
-                " calling undefined procedure '" COLOR_GREEN "%s" COLOR_NONE "'\n",
+                " calling undefined procedure " COLOR_GREEN "%s" COLOR_NONE "\n",
                 n->lno, n->name);
             return 1;
         }
@@ -62,7 +62,7 @@ int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
     case JMP: case JPC: {
         if ((ofs = get_sym_offset(lbls, n->name)) == -1) {
             printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE
-                " jumping to undefined label '" COLOR_GREEN "%s" COLOR_NONE "'\n",
+                " jumping to undefined label " COLOR_GREEN "%s" COLOR_NONE "\n",
                 n->lno, n->name);
             return 1;
         }

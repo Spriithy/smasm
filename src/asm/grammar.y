@@ -175,12 +175,12 @@ int main(void) {
     printf("---[ " COLOR_BLUE "Symbol tables" COLOR_NONE " ]---\n");
     printf(COLOR_YELLOW "   PROCEDURES:\n" COLOR_NONE);
     for (int i = 0; i < procedures->size; i++)
-        printf("     '" COLOR_GREEN "%s" COLOR_NONE "' : %d\n",
+        printf("     " COLOR_GREEN "%s" COLOR_NONE " : %d\n",
              procedures->syms[i], procedures->ofs[i]);
 
     printf(COLOR_YELLOW "   LABELS:\n" COLOR_NONE);
     for (int i = 0; i < labels->size; i++)
-        printf("     '" COLOR_GREEN "%s" COLOR_NONE "' : %d\n",
+        printf("     " COLOR_GREEN "%s" COLOR_NONE " : %d\n",
             labels->syms[i], labels->ofs[i]);
 
     return 0;
