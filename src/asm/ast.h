@@ -2,6 +2,7 @@
 #define AST_H
 
 #include <stdio.h>
+#include "symtable.h"
 
 #define VOID 0xff
 #define PRC -0x02
@@ -34,11 +35,11 @@ typedef struct {
     struct node *next;
 } node;
 
-struct node *new_node(int lno);
-struct node *new_ctrl(int sym, char *to, int lno);
-struct node *new_instr(int sym, int arg, int lno);
-struct node *new_ph(int sym, char *name, int lno);
+node *new_node(int lno);
+node *new_ctrl(int sym, char *to, int lno);
+node *new_instr(int sym, int arg, int lno);
+node *new_ph(int sym, char *name, int lno);
 
-void emit(node *n, node *h, FILE* f);
+void emit(node *n, S_TABLE* lbls, S_TABLE *prcs, FILE* f);
 
 #endif // AST_H

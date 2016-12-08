@@ -24,7 +24,7 @@ void add_sym_entry(S_TABLE *st, char *sym, int ofs) {
 
 int get_sym_offset(S_TABLE *st, char *sym) {
     for (int i = 0; i < st->size; i++) {
-        if (strcmp(sym, st->syms[i]) != 0)
+        if (strcmp(sym, st->syms[i]) == 0)
             return st->ofs[i];
     }
     return -1;

@@ -28,6 +28,22 @@
     return INT;
 }
 
+"."[a-zA-Z_][a-zA-Z0-9_]* {
+    yytext++;
+    yylval.ident = malloc(strlen(yytext) * sizeof(char));
+    strcpy(yylval.ident, yytext);
+
+    return TOKEN_PROC;
+}
+
+[a-zA-Z_][a-zA-Z0-9_]*":" {
+    yytext[strlen(yytext) - 1] = 0;
+    yylval.ident = malloc(strlen(yytext) * sizeof(char));
+    strcpy(yylval.ident, yytext);
+
+    return TOKEN_LBL;
+}
+
 pop     {
     return TOKEN_POP;
 }
@@ -86,22 +102,6 @@ op {
 
 halt {
     return TOKEN_HALT;
-}
-
-^"."[a-zA-Z_][a-zA-Z0-9_]* {
-    yytext++;
-    yylval.ident = malloc(strlen(yytext) * sizeof(char));
-    strcpy(yylval.ident, yytext);
-
-    return TOKEN_PROC;
-}
-
-^[a-zA-Z_][a-zA-Z0-9_]*":" {
-    yytext[strlen(yytext) - 1] = 0;
-    yylval.ident = malloc(strlen(yytext) * sizeof(char));
-    strcpy(yylval.ident, yytext);
-
-    return TOKEN_LBL;
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {

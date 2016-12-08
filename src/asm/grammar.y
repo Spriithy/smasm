@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include "ast.h"
+#include "symtable.h"
 
 extern int yylex(void);
 
@@ -9,8 +10,11 @@ extern int yylineno;
 extern FILE* yyin;
 extern FILE* yyout;
 
-S_TABLE *labels; // TODO finish implementation
+S_TABLE *labels;
+S_TABLE *procedures;
 node *ast_head, *ast_tail;
+
+int pc = 0;
 
 %}
 
@@ -20,9 +24,7 @@ node *ast_head, *ast_tail;
 }
 
 %token <num> INT 
-%token <ident> IDENT
-
-%token <ident> TOKEN_LBL TOKEN_PROC
+%token <ident> IDENT TOKEN_LBL TOKEN_PROC
 %token TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
 %token TOKEN_CALL TOKEN_RET TOKEN_JPC TOKEN_JMP
 %token TOKEN_READ TOKEN_WRITE
@@ -35,75 +37,90 @@ node *ast_head, *ast_tail;
 program
     : %empty
     | stat NL program
+    | TOKEN_LBL { 
+        printf("%3d: label -> %s\n", pc, $1);
+        add_sym_entry(labels, $1, pc);
+    } stat NL program
     ;
 
 stat
     : TOKEN_PROC {
-        ast_tail->next = new_ph(PRC, $1, yylineno);
-        ast_tail = ast_tail->next;
-    }
-    | TOKEN_LBL stat { 
-        ast_tail->next = new_ph(LBL, $1, yylineno);
-        ast_tail = ast_tail->next;
+        printf("%3d: procedure -> %s\n", pc, $1);
+        add_sym_entry(procedures, $1, pc);
     }
     | TOKEN_POP INT {
-        ast_tail->next = new_instr(POP, $2, yylineno);
+        printf("%3d: pop %d\n", pc, $2);
+        ast_tail->next = new_instr(POP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_PUSH INT {
-        ast_tail->next = new_instr(PUSH, $2, yylineno);
+        printf("%3d: push %d\n", pc, $2);
+        ast_tail->next = new_instr(PUSH, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_PUSHS INT {
-        ast_tail->next = new_instr(PUSHS, $2, yylineno);
+        printf("%3d: push %d\n", pc, $2);
+        ast_tail->next = new_instr(PUSHS, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_IPOP {
-        ast_tail->next = new_instr(IPOP, 0, yylineno);
+        printf("%3d: ipop\n", pc);
+        ast_tail->next = new_instr(IPOP, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_IPUSH {
-        ast_tail->next = new_instr(IPUSH, 0, yylineno);
+        printf("%3d: ipush\n", pc);
+        ast_tail->next = new_instr(IPUSH, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_CALL IDENT {
-        ast_tail->next = new_ctrl(CALL, $2, yylineno);
+        printf("%3d: call %s\n", pc, $2);
+        ast_tail->next = new_ctrl(CALL, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_RET {
-        ast_tail->next = new_instr(RET, 0, yylineno);
+        printf("%3d: ret\n", pc);
+        ast_tail->next = new_instr(RET, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_JMP IDENT {
-        ast_tail->next = new_ctrl(JMP, $2, yylineno);
+        printf("%3d: jmp %s\n", pc, $2);
+        ast_tail->next = new_ctrl(JMP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_JPC IDENT {
-        ast_tail->next = new_ctrl(JPC, $2, yylineno);
+        printf("%3d: jpc %s\n", pc, $2);
+        ast_tail->next = new_ctrl(JPC, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_WRITE INT {
-        ast_tail->next = new_instr(WRITE, $2, yylineno);
+        printf("%3d: write %d\n", pc, $2);
+        ast_tail->next = new_instr(WRITE, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_READ INT {
-        ast_tail->next = new_instr(READ, $2, yylineno);
+        printf("%3d: read %d\n", pc, $2);
+        ast_tail->next = new_instr(READ, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_RAND INT {
-        ast_tail->next = new_instr(RND, $2, yylineno);
+        printf("%3d: rand %d\n", pc, $2);
+        ast_tail->next = new_instr(RND, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_DUP {
-        ast_tail->next = new_instr(DUP, 0, yylineno);
+        printf("%3d: dup\n", pc);
+        ast_tail->next = new_instr(DUP, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_OP INT {
-        ast_tail->next = new_instr(OP, $2, yylineno);
+        printf("%3d: op %d\n", pc, $2);
+        ast_tail->next = new_instr(OP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_HALT {
-        ast_tail->next = new_instr(HALT, 0, yylineno);
+        printf("%3d: halt\n", pc);
+        ast_tail->next = new_instr(HALT, 0, pc++);
         ast_tail = ast_tail->next;
     }
     ;
@@ -116,6 +133,8 @@ int main(void) {
 
     ast_head = new_ph(VOID, "<start>", 0);
     ast_tail = ast_head;
+    procedures = new_sym_table();
+    labels = new_sym_table();
 
     do {
         yyparse();
@@ -123,7 +142,15 @@ int main(void) {
 
     node *p = ast_head;
     while ((p = p->next) != NULL)
-        emit(p, ast_head, yyout);
+        emit(p, labels, procedures, yyout);
+
+    printf("PROCEDURES:\n");
+    for (int i = 0; i < procedures->size; i++)
+        printf("  '%s' : %d\n", procedures->syms[i], procedures->ofs[i]);
+
+    printf("LABELS:\n");
+    for (int i = 0; i < labels->size; i++)
+        printf("  '%s' : %d\n", labels->syms[i], labels->ofs[i]);
 
     return 0;
 }
