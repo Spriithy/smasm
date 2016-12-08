@@ -40,6 +40,6 @@ node *new_ctrl(int sym, char *to, int lno);
 node *new_instr(int sym, int arg, int lno);
 node *new_ph(int sym, char *name, int lno);
 
-void emit(node *n, S_TABLE* lbls, S_TABLE *prcs, FILE* f);
+int emit(node *n, S_TABLE* lbls, S_TABLE *prcs, FILE* f);
 
 #endif // AST_H

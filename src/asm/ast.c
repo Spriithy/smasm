@@ -33,11 +33,11 @@ node *new_ph(int sym, char *name, int lno) {
     return n;
 } 
 
-void emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
+int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
     int ofs = 0;
     
     switch (n->sym) {
-    case PRC: case LBL: return;
+    case PRC: case LBL: return 0;
     case POP:
     case PUSH:
     case PUSHS:
@@ -46,25 +46,30 @@ void emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
     case RND:
     case OP:
         fprintf(f, "%02X %02X %02X\n", n->sym, (n->arg >> 8) & 0xff, n->arg & 0xff);
-        return;
+        return 0;
     case CALL: {
-        if ((ofs = get_sym_offset(prcs, n->name)) == -1)
-            printf("error:%d: calling undefined procedure '%s'\n", n->lno, n->name);
+        if ((ofs = get_sym_offset(prcs, n->name)) == -1) {
+            printf("\x1b[1;31merror:\x1b[0m\x1b[33m%d:\x1b[0m calling undefined procedure '\x1b[32m%s\x1b[0m'\n", n->lno, n->name);
+            return 1;
+        }
 
         printf("%d for %s\n", ofs, n->name);
         fprintf(f, "%02X %02X %02X\n", n->sym, (ofs >> 8) & 0xff, ofs & 0xff); // TODO
-        return;
+        return 0;
     }
     case JMP: case JPC: {
-        if ((ofs = get_sym_offset(lbls, n->name)) == -1)
-            printf("error:%d: jumping to undefined label '%s'\n", n->lno, n->name);
-        
+        if ((ofs = get_sym_offset(lbls, n->name)) == -1) {
+            printf("\x1b[1;31merror:\x1b[0m\x1b[33m%d:\x1b[0m jumping to undefined label '\x1b[32m%s\x1b[0m'\n", n->lno, n->name);
+            return 1;
+        }
+
         ofs -= n->lno + 1;
         printf("%s: from %d to %d\n", n->name, n->lno, ofs);
         fprintf(f, "%02X %02X %02X\n", n->sym, (ofs >> 8) & 0xff, ofs & 0xff); // TODO
-        return;
+        return 0;
     }
     default:
         fprintf(f, "%02X 00 00\n", n->sym);
     }
+    return 0;
 }

@@ -140,9 +140,13 @@ int main(void) {
         yyparse();
     } while(!feof(yyin));
 
+    int errcount = 0;
     node *p = ast_head;
-    while ((p = p->next) != NULL)
-        emit(p, labels, procedures, yyout);
+    while ((p = p->next) != NULL) {
+        errcount += emit(p, labels, procedures, yyout);
+    }
+    printf("encountered \x1b[1;31m%d\x1b[0m error%s\n", errcount, (errcount > 1 ? "s" : ""));
+    if (errcount) remove("a.out");
 
     printf("PROCEDURES:\n");
     for (int i = 0; i < procedures->size; i++)
