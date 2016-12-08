@@ -6,16 +6,16 @@ Final semester project. A small assembler language compiler and the virtual mach
 
 ### Overall
 
-[ ] Unique main file
-[ ] Verbose modes
+* [ ] Unique main file
+* [ ] Verbose modes
 
 ### Compiler 
 
-[ ] Better error handling at compile time
-[ ] Better AST structure ?
-[ ] Modular in/out files
+* [ ] Better error handling at compile time
+* [ ] Better AST structure ?
+* [ ] Modular in/out files
 
 ### VM
 
-[ ] Full rework
+* [ ] Full rework
 
