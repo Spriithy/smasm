@@ -53,7 +53,6 @@ int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
             return 1;
         }
 
-        printf("%d for %s\n", ofs, n->name);
         fprintf(f, "%02X %02X %02X\n", n->sym, (ofs >> 8) & 0xff, ofs & 0xff); // TODO
         return 0;
     }
@@ -64,7 +63,6 @@ int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
         }
 
         ofs -= n->lno + 1;
-        printf("%s: from %d to %d\n", n->name, n->lno, ofs);
         fprintf(f, "%02X %02X %02X\n", n->sym, (ofs >> 8) & 0xff, ofs & 0xff); // TODO
         return 0;
     }

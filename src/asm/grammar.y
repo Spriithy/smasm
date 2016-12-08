@@ -7,14 +7,17 @@
 extern int yylex(void);
 
 extern int yylineno;
-extern FILE* yyin;
-extern FILE* yyout;
+
+extern FILE *yyin, *yyout;
 
 S_TABLE *labels;
 S_TABLE *procedures;
 node *ast_head, *ast_tail;
 
 int pc = 0;
+int errcount = 0;
+
+char *tok;
 
 %}
 
@@ -25,10 +28,10 @@ int pc = 0;
 
 %token <num> INT 
 %token <ident> IDENT TOKEN_LBL TOKEN_PROC
-%token TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
-%token TOKEN_CALL TOKEN_RET TOKEN_JPC TOKEN_JMP
-%token TOKEN_READ TOKEN_WRITE
-%token TOKEN_RAND TOKEN_DUP TOKEN_OP TOKEN_HALT
+%token <ident> TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
+%token <ident> TOKEN_CALL TOKEN_RET TOKEN_JPC TOKEN_JMP
+%token <ident> TOKEN_READ TOKEN_WRITE
+%token <ident> TOKEN_RAND TOKEN_DUP TOKEN_OP TOKEN_HALT
 
 %token NL
 
@@ -37,88 +40,106 @@ int pc = 0;
 program
     : %empty
     | stat NL program
-    | TOKEN_LBL { 
+    | TOKEN_LBL {
+        tok = $1;
         printf("%3d: label -> %s\n", pc, $1);
         add_sym_entry(labels, $1, pc);
     } stat NL program
+    | TOKEN_PROC {
+        tok = $1;
+        printf("%3d: procedure -> %s\n", pc, $1);
+        add_sym_entry(procedures, $1, pc);
+    } NL program 
+    | NL program
     ;
 
 stat
-    : TOKEN_PROC {
-        printf("%3d: procedure -> %s\n", pc, $1);
-        add_sym_entry(procedures, $1, pc);
-    }
-    | TOKEN_POP INT {
+    : TOKEN_POP INT {
+        tok = $1;
         printf("%3d: pop %d\n", pc, $2);
         ast_tail->next = new_instr(POP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_PUSH INT {
+        tok = $1;
         printf("%3d: push %d\n", pc, $2);
         ast_tail->next = new_instr(PUSH, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_PUSHS INT {
+        tok = $1;
         printf("%3d: push %d\n", pc, $2);
         ast_tail->next = new_instr(PUSHS, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_IPOP {
+        tok = $1;
         printf("%3d: ipop\n", pc);
         ast_tail->next = new_instr(IPOP, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_IPUSH {
+        tok = $1;
         printf("%3d: ipush\n", pc);
         ast_tail->next = new_instr(IPUSH, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_CALL IDENT {
+        tok = $2;
         printf("%3d: call %s\n", pc, $2);
         ast_tail->next = new_ctrl(CALL, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_RET {
+        tok = $1;
         printf("%3d: ret\n", pc);
         ast_tail->next = new_instr(RET, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_JMP IDENT {
+        tok = $2;
         printf("%3d: jmp %s\n", pc, $2);
         ast_tail->next = new_ctrl(JMP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_JPC IDENT {
+        tok = $2;
         printf("%3d: jpc %s\n", pc, $2);
         ast_tail->next = new_ctrl(JPC, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_WRITE INT {
+        tok = $1;
         printf("%3d: write %d\n", pc, $2);
         ast_tail->next = new_instr(WRITE, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_READ INT {
+        tok = $1;
         printf("%3d: read %d\n", pc, $2);
         ast_tail->next = new_instr(READ, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_RAND INT {
+        tok = $1;
         printf("%3d: rand %d\n", pc, $2);
         ast_tail->next = new_instr(RND, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_DUP {
+        tok = $1;
         printf("%3d: dup\n", pc);
         ast_tail->next = new_instr(DUP, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_OP INT {
+        tok = $1;
         printf("%3d: op %d\n", pc, $2);
         ast_tail->next = new_instr(OP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_HALT {
+        tok = $1;
         printf("%3d: halt\n", pc);
         ast_tail->next = new_instr(HALT, 0, pc++);
         ast_tail = ast_tail->next;
@@ -140,13 +161,14 @@ int main(void) {
         yyparse();
     } while(!feof(yyin));
 
-    int errcount = 0;
     node *p = ast_head;
     while ((p = p->next) != NULL) {
         errcount += emit(p, labels, procedures, yyout);
     }
-    printf("encountered \x1b[1;31m%d\x1b[0m error%s\n", errcount, (errcount > 1 ? "s" : ""));
-    if (errcount) remove("a.out");
+    if (errcount) {
+        printf("encountered \x1b[1;31m%d\x1b[0m error%s\n", errcount, (errcount > 1 ? "s" : ""));
+        remove("a.out");
+    }
 
     printf("PROCEDURES:\n");
     for (int i = 0; i < procedures->size; i++)
@@ -160,6 +182,7 @@ int main(void) {
 }
 
 yyerror(const char *s) {
-    printf("%d: %s\n", yylineno, s);
+    errcount++;
+    printf("\x1b[1;31merror:\x1b[0m\x1b[33m%d:\x1b[0m %s. Unexpected token after '%s'\n", yylineno, s, tok);
     return 1;
 }
