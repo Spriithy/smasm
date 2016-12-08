@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "ast.h"
 #include "symtable.h"
+#include "../colors.h"
 
 extern int yylex(void);
 
@@ -166,23 +167,29 @@ int main(void) {
         errcount += emit(p, labels, procedures, yyout);
     }
     if (errcount) {
-        printf("encountered \x1b[1;31m%d\x1b[0m error%s\n", errcount, (errcount > 1 ? "s" : ""));
+        printf("encountered " COLOR_RED "%d" COLOR_NONE " error%s\n",
+            errcount,(errcount > 1 ? "s" : ""));
         remove("a.out");
     }
 
-    printf("PROCEDURES:\n");
+    printf("---[ " COLOR_BLUE "Symbol tables" COLOR_NONE " ]---\n");
+    printf(COLOR_YELLOW "   PROCEDURES:\n" COLOR_NONE);
     for (int i = 0; i < procedures->size; i++)
-        printf("  '%s' : %d\n", procedures->syms[i], procedures->ofs[i]);
+        printf("     '" COLOR_GREEN "%s" COLOR_NONE "' : %d\n",
+             procedures->syms[i], procedures->ofs[i]);
 
-    printf("LABELS:\n");
+    printf(COLOR_YELLOW "   LABELS:\n" COLOR_NONE);
     for (int i = 0; i < labels->size; i++)
-        printf("  '%s' : %d\n", labels->syms[i], labels->ofs[i]);
+        printf("     '" COLOR_GREEN "%s" COLOR_NONE "' : %d\n",
+            labels->syms[i], labels->ofs[i]);
 
     return 0;
 }
 
 yyerror(const char *s) {
     errcount++;
-    printf("\x1b[1;31merror:\x1b[0m\x1b[33m%d:\x1b[0m %s. Unexpected token after '%s'\n", yylineno, s, tok);
+    printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE " %s. Unexpected token after '"
+        COLOR_GREEN "%s" COLOR_NONE "'\n",
+        yylineno, s, tok);
     return 1;
 }

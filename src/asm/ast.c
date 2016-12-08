@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "ast.h"
+#include "../colors.h"
 
 node *new_node(int lno) {
     node *n = calloc(1, sizeof(node));
@@ -49,7 +50,9 @@ int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
         return 0;
     case CALL: {
         if ((ofs = get_sym_offset(prcs, n->name)) == -1) {
-            printf("\x1b[1;31merror:\x1b[0m\x1b[33m%d:\x1b[0m calling undefined procedure '\x1b[32m%s\x1b[0m'\n", n->lno, n->name);
+            printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE
+                " calling undefined procedure '" COLOR_GREEN "%s" COLOR_NONE "'\n",
+                n->lno, n->name);
             return 1;
         }
 
@@ -58,7 +61,9 @@ int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE* f) {
     }
     case JMP: case JPC: {
         if ((ofs = get_sym_offset(lbls, n->name)) == -1) {
-            printf("\x1b[1;31merror:\x1b[0m\x1b[33m%d:\x1b[0m jumping to undefined label '\x1b[32m%s\x1b[0m'\n", n->lno, n->name);
+            printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE
+                " jumping to undefined label '" COLOR_GREEN "%s" COLOR_NONE "'\n",
+                n->lno, n->name);
             return 1;
         }
 
