@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "ast.h"
 #include "symtable.h"
+#include "../instructions.h"
 #include "../colors.h"
 
 extern int yylex(void);
@@ -27,7 +28,7 @@ char *tok;
     char *ident;
 }
 
-%token <num> INT 
+%token <num> INT
 %token <ident> IDENT TOKEN_LBL TOKEN_PROC
 %token <ident> TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
 %token <ident> TOKEN_CALL TOKEN_RET TOKEN_JPC TOKEN_JMP
@@ -50,7 +51,7 @@ program
         tok = $1;
         printf("%3d: procedure -> %s\n", pc, $1);
         add_sym_entry(procedures, $1, pc);
-    } NL program 
+    } NL program
     | NL program
     ;
 
