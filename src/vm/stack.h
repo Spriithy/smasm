@@ -14,8 +14,7 @@ typedef struct {
 
 stack *new_stack(int size);
 
-int stack_grow(stack *s, int by);
 word stack_pop(stack *s);
-void stack_push(stack *s, word w);
+int stack_push(stack *s, word w);
 
 #endif  // STACK_H

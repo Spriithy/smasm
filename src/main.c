@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "include/colors.h"
-#include "include/compiler.h"
+#include "colors.h"
 
 #define ASM_NAME "smasm"
 
@@ -48,7 +47,7 @@ int main(int argc, char *argv[]) {
 
           puts("Compiling file.");
 
-          compile(argv[2], 1);
+          // compile(argv[2], 1);
 
           break;
         default:
