@@ -11,7 +11,3 @@ ici:  read	1000  ; Load from memory
       jmp	ici
 fin:  halt
 
-.global
-      read 100
-      call global
-      ret
