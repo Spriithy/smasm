@@ -10,4 +10,3 @@ ici:  read	1000  ; Load from memory
       write	1000
       jmp	ici
 fin:  halt
-

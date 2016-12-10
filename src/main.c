@@ -2,57 +2,64 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "asm/compiler.h"
 #include "colors.h"
-
-#define ASM_NAME "smasm"
+#include "vm/interpreter.h"
+#include "vm/loader.h"
 
 void usage() {
-  printf("usage:\n  " COLOR_GREEN "%s" COLOR_NONE "\t-[" COLOR_YELLOW
-         "h" COLOR_NONE "|" COLOR_YELLOW "c" COLOR_NONE "|" COLOR_YELLOW
-         "e" COLOR_NONE "] <" COLOR_BLUE "files" COLOR_NONE ">\n\n",
-         ASM_NAME);
-  printf(COLOR_YELLOW "  -h\t" COLOR_NONE " for some help\n");
-  printf(COLOR_YELLOW "  -c\t" COLOR_NONE " to compile all given files\n");
-  printf(COLOR_YELLOW "  -e\t" COLOR_NONE " to execute the given files\n");
+  printf(
+      "usage:    smasm <flags> <input> [output]\n"
+      "\tl       will generate a .log file reporting everything happened\n"
+      "\te       is used to execute a file\n"
+      "\tc       will compile a source file\n");
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv) {
   srand(time(NULL));
 
-  printf("%d\n", argc);
-  for (int i = 0; i < argc; i++) puts(argv[i]);
+  int flagC = 0, flagE = 0, flagL = 0;
+
+  char *in, *out = "a.out";
 
   switch (argc) {
-    case 1:
-      goto error;
+    case 4:
+      out = argv[3];
+    case 3: {
+      if (argv[1][0] != '-') goto error;
+      char c = argv[1][1];
+      while ((c = *argv[1]++)) switch (c) {
+          case 'e':
+            flagE++;
+            break;
+          case 'c':
+            flagC++;
+            break;
+          case 'l':
+            flagL++;
+            break;
+          case '-':
+            break;
+          default:
+            printf("unrecognized flag '%c'\n", c);
+            goto error;
+        }
+      in = argv[2];
+    } break;
     default:
-      if (strlen(argv[1]) != 2 || argv[1][0] != '-')
-        ERROR("unrecognized option: " COLOR_RED "%s\n" COLOR_NONE, argv[1]);
+      goto error;
+  }
 
-      switch (argv[1][1]) {
-        case 'h':
-          // Show help
-          usage();
-          break;
-        case 'e':
-          // Execute input files
-          if (argc - 2 <= 0) ERROR("no input files%s\n", "");
+  if (flagC) {
+    // Compile
+    compile(in, out, flagL);
+    in = out;
+  }
 
-          puts("Executing file.");
-
-          break;
-        case 'c':
-          // Parse and compile input files
-          if (argc - 2 <= 0) ERROR("no input files%s\n", "");
-
-          puts("Compiling file.");
-
-          // compile(argv[2], 1);
-
-          break;
-        default:
-          ERROR("unrecognized option: %s\n", argv[1]);
-      }
+  if (flagE) {
+    // Execute
+    opcode *ops = load_file(in);
+    return execute(ops);
   }
 
   return 0;

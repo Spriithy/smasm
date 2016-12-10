@@ -1,10 +1,10 @@
-a.out
+**/*/a.out
 
-src/**/*.tab.*
-src/**/*.lex.*
-src/**/*yy*
-src/**/PARSER
-src/**/LEXER
+**/*.tab.*
+**/*.lex.*
+**/*yy*
+**/*/PARSER
+**/*/LEXER
 
 build/
 

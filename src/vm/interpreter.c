@@ -9,25 +9,16 @@
 
 FILE *vmout;
 
-/* Setting up some useful macros for readability */
-#define skip(n) \
-  pc += n;      \
-  dispatch()
-
 #define S_PUSH(x) stack_push(s, (x))
 #define S_POP() stack_pop(s)
 #define S_PEEK() s->data[s->size - 1]
 
-#define dispatch()                      \
-  trace(pc, s->size, op, ex, S_PEEK()); \
-  op = code[pc];                        \
-  ex = code[pc + 1];                    \
-  goto *table[code[pc++]]
-
 /* The function used to execute a chunk of bytecodes */
 int execute(opcode *code) {
   vmout = fopen("vm.log", "w");
-  //  if (vmout == NULL) VM_ERROR("%s", "couldn't open/create log file");
+  if (vmout == NULL) {
+    VM_ERROR("%s", "couldn't open/create log file");
+  }
 
   // Working out the dispatch table
   SETUP_TABLE();
@@ -35,58 +26,73 @@ int execute(opcode *code) {
   stack *s = new_stack(STACK_SIZE_INITIAL);
   opcode op = 0, ex = 0, u, v;
   word mem[4000] = {0};
-  int pc = 0;
+  word pc = 0;
 
-  dispatch();
+dispatch: /* will dispatch the work for the next instruction and log */
+  op = code[pc];
+  ex = code[pc + 1];
+  trace(pc, s->size, op, ex, S_PEEK());
+  goto *table[op];
+
 do_POP:
   u = S_POP();
   mem[ex] = u;
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_PUSH:
   u = mem[ex];
   S_PUSH(u);
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_IPOP:
   u = S_POP();
   v = S_POP();
   mem[u] = v;
-  skip(0);
+  pc++;
+  goto dispatch;
 do_IPUSH:
   u = S_POP();
   v = mem[u];
   S_PUSH(v);
-  skip(0);
+  pc++;
+  goto dispatch;
 do_PUSHS:
   S_PUSH(ex);
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_CALL:
   S_PUSH(pc);
   pc = ex;
-  dispatch();
+  goto dispatch;
 do_RET:
   pc = S_POP();
-  dispatch();
+  goto dispatch;
 do_JMP:
-  skip(ex - 1);
-  dispatch();
+  pc += 2 * (ex + 1);
+  goto dispatch;
 do_JPC:
   if (S_POP()) {
-    skip(ex - 1);
+    pc += 2 * (ex + 1);
+    goto dispatch;
   }
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_WRITE:
   printf("%hd\n", mem[ex]);
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_READ:
   scanf("%hd", &mem[ex]);
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_RND:
   // TODO
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_DUP:
   u = S_PEEK();
   S_PUSH(u);
-  skip(0);
+  pc++;
 do_OP:
   u = S_POP();
   switch (ex) {
@@ -146,7 +152,9 @@ do_OP:
       break;
     case 0xe:
       v = S_POP();
-      if (!u) VM_ERROR("%s", "division by zero is forbidden");
+      if (!u) {
+        VM_ERROR("%s", "division by zero is forbidden");
+      }
       S_PUSH(v / u);
       break;
     case 0xf:
@@ -156,7 +164,8 @@ do_OP:
     default:
       VM_ERROR("unknown arithmetic operation 0x%X", ex);
   }
-  skip(1);
+  pc += 2;
+  goto dispatch;
 do_ERROR:
   VM_ERROR("unknown instruction 0x%04X", op);
 
@@ -166,6 +175,6 @@ do_HALT:
 }
 
 void trace(int pc, int sp, opcode op, opcode ex, word top) {
-  fprintf(vmout, "[log]\tpc=%d\n\tsp=%d\n\ttop=%hd\n", pc, sp, top);
+  fprintf(vmout, "pc=%d:\tsp=%d, top=%hd\n", pc, sp, top);
   fprintf(vmout, "\texec=0x%04X next=0x%04X\n", op, ex);
 }

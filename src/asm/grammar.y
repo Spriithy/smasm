@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include "ast.h"
+#include "compiler.h"
 #include "symtable.h"
 #include "../instructions.h"
 #include "../colors.h"
@@ -10,7 +11,10 @@ extern int yylex(void);
 
 extern int yylineno;
 
+int yydolog = 0;
+
 extern FILE *yyin, *yyout;
+FILE *yylog;
 
 S_TABLE *labels;
 S_TABLE *procedures;
@@ -44,12 +48,12 @@ program
     | stat NL program
     | TOKEN_LBL {
         tok = $1;
-        printf("%3d: label -> %s\n", pc, $1);
+        if (yydolog) fprintf(yylog, "%3d: label -> %s\n", pc, $1);
         add_sym_entry(labels, $1, pc);
     } stat NL program
     | TOKEN_PROC {
         tok = $1;
-        printf("%3d: procedure -> %s\n", pc, $1);
+        if (yydolog) fprintf(yylog, "%3d: procedure -> %s\n", pc, $1);
         add_sym_entry(procedures, $1, pc);
     } NL program
     | NL program
@@ -58,91 +62,91 @@ program
 stat
     : TOKEN_POP INT {
         tok = $1;
-        printf("%3d: pop %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: pop %d\n", pc, $2);
         ast_tail->next = new_instr(POP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_PUSH INT {
         tok = $1;
-        printf("%3d: push %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: push %d\n", pc, $2);
         ast_tail->next = new_instr(PUSH, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_PUSHS INT {
         tok = $1;
-        printf("%3d: push %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: push %d\n", pc, $2);
         ast_tail->next = new_instr(PUSHS, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_IPOP {
         tok = $1;
-        printf("%3d: ipop\n", pc);
+        if (yydolog) fprintf(yylog, "%3d: ipop\n", pc);
         ast_tail->next = new_instr(IPOP, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_IPUSH {
         tok = $1;
-        printf("%3d: ipush\n", pc);
+        if (yydolog) fprintf(yylog, "%3d: ipush\n", pc);
         ast_tail->next = new_instr(IPUSH, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_CALL IDENT {
         tok = $2;
-        printf("%3d: call %s\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: call %s\n", pc, $2);
         ast_tail->next = new_ctrl(CALL, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_RET {
         tok = $1;
-        printf("%3d: ret\n", pc);
+        if (yydolog) fprintf(yylog, "%3d: ret\n", pc);
         ast_tail->next = new_instr(RET, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_JMP IDENT {
         tok = $2;
-        printf("%3d: jmp %s\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: jmp %s\n", pc, $2);
         ast_tail->next = new_ctrl(JMP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_JPC IDENT {
         tok = $2;
-        printf("%3d: jpc %s\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: jpc %s\n", pc, $2);
         ast_tail->next = new_ctrl(JPC, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_WRITE INT {
         tok = $1;
-        printf("%3d: write %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: write %d\n", pc, $2);
         ast_tail->next = new_instr(WRITE, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_READ INT {
         tok = $1;
-        printf("%3d: read %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: read %d\n", pc, $2);
         ast_tail->next = new_instr(READ, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_RAND INT {
         tok = $1;
-        printf("%3d: rand %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: rand %d\n", pc, $2);
         ast_tail->next = new_instr(RND, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_DUP {
         tok = $1;
-        printf("%3d: dup\n", pc);
+        if (yydolog) fprintf(yylog, "%3d: dup\n", pc);
         ast_tail->next = new_instr(DUP, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_OP INT {
         tok = $1;
-        printf("%3d: op %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: op %d\n", pc, $2);
         ast_tail->next = new_instr(OP, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_HALT {
         tok = $1;
-        printf("%3d: halt\n", pc);
+        if (yydolog) fprintf(yylog, "%3d: halt\n", pc);
         ast_tail->next = new_instr(HALT, 0, pc++);
         ast_tail = ast_tail->next;
     }
@@ -150,47 +154,58 @@ stat
 
 %%
 
-int main(void) {
-    yyin = fopen("../../tests/test.s", "r");
-    yyout = fopen("a.out", "w+");
+int compile(char *in, char *out, int log) {
+  yydolog = log;
 
-    ast_head = new_ph(VOID, "<start>", 0);
-    ast_tail = ast_head;
-    procedures = new_sym_table();
-    labels = new_sym_table();
+  yyin = fopen(in, "r");
+  yyout = fopen(out, "w+");
+  if (log) yylog = fopen("asm.comp.log", "w+");
 
-    do {
-        yyparse();
-    } while(!feof(yyin));
+  if (yyin == NULL) { ERROR("couldn't open/read source file '%s'", in); }
+  if (yyout == NULL) { ERROR("couldn't create/open file '%s'", out); }
+  if (log) if (yylog == NULL) { ERROR("%s", "couldn't create/open file 'asm.comp.log'"); }
 
-    node *p = ast_head;
-    while ((p = p->next) != NULL) {
-        errcount += emit(p, labels, procedures, yyout);
-    }
-    if (errcount) {
-        printf("encountered " COLOR_RED "%d" COLOR_NONE " error%s\n",
-            errcount,(errcount > 1 ? "s" : ""));
-        remove("a.out");
-    }
+  ast_head = new_ph(VOID, "<start>", 0);
+  ast_tail = ast_head;
+  procedures = new_sym_table();
+  labels = new_sym_table();
 
-    printf("---[ " COLOR_BLUE "Symbol tables" COLOR_NONE " ]---\n");
-    printf(COLOR_YELLOW "   PROCEDURES:\n" COLOR_NONE);
+  do {
+    yyparse();
+  } while (!feof(yyin));
+
+  node *p = ast_head;
+  while ((p = p->next) != NULL) {
+    errcount += emit(p, labels, procedures, yyout);
+  }
+
+  if (errcount) {
+    printf("encountered " COLOR_RED "%d" COLOR_NONE " error%s\n", errcount,
+           (errcount > 1 ? "s" : ""));
+    remove(out);
+  }
+
+  if (log) {
+    fprintf(yylog, "---[ Symbol tables ]---\n");
+    fprintf(yylog, "   PROCEDURES:\n");
     for (int i = 0; i < procedures->size; i++)
-        printf("     " COLOR_GREEN "%s" COLOR_NONE " : %d\n",
-             procedures->syms[i], procedures->ofs[i]);
+      fprintf(yylog, "     %s : %d\n", procedures->syms[i], procedures->ofs[i]);
 
-    printf(COLOR_YELLOW "   LABELS:\n" COLOR_NONE);
+    fprintf(yylog, "   LABELS:\n");
     for (int i = 0; i < labels->size; i++)
-        printf("     " COLOR_GREEN "%s" COLOR_NONE " : %d\n",
-            labels->syms[i], labels->ofs[i]);
+      fprintf(yylog, "     %s : %d\n", labels->syms[i], labels->ofs[i]);
+  }
 
-    return 0;
+  fclose(yyin);
+  fclose(yyout);
+  if (log) fclose(yylog);
+
+  return 0;
 }
 
 yyerror(const char *s) {
     errcount++;
     printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE " %s. Unexpected token after '"
-        COLOR_GREEN "%s" COLOR_NONE "'\n",
-        yylineno, s, tok);
+        COLOR_GREEN "%s" COLOR_NONE "'\n", yylineno, s, tok);
     return 1;
 }
