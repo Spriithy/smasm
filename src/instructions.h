@@ -20,6 +20,11 @@ typedef int16_t opcode;
 #define RND 0x0b
 #define DUP 0x0c
 #define OP 0x0d
+#define LOAD 0x0e
+#define STORE 0x0f
+#define MSWAP 0x10
+#define RETZ 0x11
+#define RETNZ 0x12
 #define HALT 0x63
 
 #endif  // INSTRUCTIONS_H

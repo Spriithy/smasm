@@ -24,7 +24,7 @@ int execute(opcode *code) {
   SETUP_TABLE();
 
   stack *s = new_stack(STACK_SIZE_INITIAL);
-  opcode op = 0, ex = 0, u, v;
+  opcode op = 0, ex = 0, u, v, w;
   word mem[4000] = {0};
   word pc = 0;
 
@@ -67,6 +67,12 @@ do_CALL:
 do_RET:
   pc = S_POP();
   goto dispatch;
+do_RETZ:
+  if (S_POP()) pc = S_POP();
+  goto dispatch;
+do_RETNZ:
+  if (!S_POP()) pc = S_POP();
+  goto dispatch;
 do_JMP:
   pc += 2 * (ex + 1);
   goto dispatch;
@@ -93,6 +99,14 @@ do_DUP:
   u = S_PEEK();
   S_PUSH(u);
   pc++;
+do_MSWAP:
+  u = S_POP();
+  v = S_POP();
+  w = mem[u];
+  mem[u] = mem[v];
+  mem[v] = w;
+  pc++;
+  goto dispatch;
 do_OP:
   u = S_POP();
   switch (ex) {

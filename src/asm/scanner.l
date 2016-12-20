@@ -13,7 +13,7 @@
 
 ";".*   ;
 [ \t\r] ;
-  
+
 \n {
     return NL;
 }
@@ -72,6 +72,14 @@ ret {
     return TOKEN_RET;
 }
 
+retz {
+  return TOKEN_RETZ;
+}
+
+retnz {
+  return TOKEN_RETNZ;
+}
+
 jmp {
     return TOKEN_JMP;
 }
@@ -94,6 +102,10 @@ rand {
 
 dup {
     return TOKEN_DUP;
+}
+
+mswap {
+  return TOKEN_SWAP;
 }
 
 op {

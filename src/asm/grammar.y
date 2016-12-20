@@ -35,8 +35,8 @@ char *tok;
 %token <num> INT
 %token <ident> IDENT TOKEN_LBL TOKEN_PROC
 %token <ident> TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
-%token <ident> TOKEN_CALL TOKEN_RET TOKEN_JPC TOKEN_JMP
-%token <ident> TOKEN_READ TOKEN_WRITE
+%token <ident> TOKEN_CALL TOKEN_RET TOKEN_RETZ TOKEN_RETNZ TOKEN_JPC TOKEN_JMP
+%token <ident> TOKEN_READ TOKEN_WRITE TOKEN_MSWAP
 %token <ident> TOKEN_RAND TOKEN_DUP TOKEN_OP TOKEN_HALT
 
 %token NL
@@ -102,6 +102,18 @@ stat
         ast_tail->next = new_instr(RET, 0, pc++);
         ast_tail = ast_tail->next;
     }
+    | TOKEN_RETNZ {
+        tok = $1;
+        if (yydolog) fprintf(yylog, "%3d: retnz\n", pc);
+        ast_tail->next = new_instr(RETNZ, 0, pc++);
+        ast_tail = ast_tail->next;
+    }
+    | TOKEN_RETZ {
+        tok = $1;
+        if (yydolog) fprintf(yylog, "%3d: retz\n", pc);
+        ast_tail->next = new_instr(RETZ, 0, pc++);
+        ast_tail = ast_tail->next;
+    }
     | TOKEN_JMP IDENT {
         tok = $2;
         if (yydolog) fprintf(yylog, "%3d: jmp %s\n", pc, $2);
@@ -136,6 +148,12 @@ stat
         tok = $1;
         if (yydolog) fprintf(yylog, "%3d: dup\n", pc);
         ast_tail->next = new_instr(DUP, 0, pc++);
+        ast_tail = ast_tail->next;
+    }
+    | TOKEN_MSWAP {
+        tok = $1;
+        if (yydolog) fprintf(yylog, "%3d: mswap\n", pc);
+        ast_tail->next = new_instr(MSWAP, 0, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_OP INT {
