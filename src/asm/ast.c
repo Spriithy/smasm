@@ -39,7 +39,6 @@ int emit(struct node *n, S_TABLE *lbls, S_TABLE *prcs, FILE *f) {
   int ofs = 0;
 
   switch (n->sym) {
-    case PRC:
     case LBL:
       return 0;
     case POP:
@@ -55,8 +54,8 @@ int emit(struct node *n, S_TABLE *lbls, S_TABLE *prcs, FILE *f) {
     case CALL:
       if ((ofs = get_sym_offset(prcs, n->name)) == -1) {
         printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE
-                         " calling undefined procedure " COLOR_GREEN
-                         "%s" COLOR_NONE "\n",
+                         " calling undefined label " COLOR_GREEN "%s" COLOR_NONE
+                         "\n",
                n->lno, n->name);
         return 1;
       }

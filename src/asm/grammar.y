@@ -33,7 +33,7 @@ char *tok;
 }
 
 %token <num> INT
-%token <ident> IDENT TOKEN_LBL TOKEN_PROC
+%token <ident> IDENT TOKEN_LBL
 %token <ident> TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
 %token <ident> TOKEN_CALL TOKEN_RET TOKEN_RETZ TOKEN_RETNZ TOKEN_JPC TOKEN_JMP
 %token <ident> TOKEN_READ TOKEN_WRITE TOKEN_MSWAP
@@ -51,11 +51,6 @@ program
         if (yydolog) fprintf(yylog, "%3d: label -> %s\n", pc, $1);
         add_sym_entry(labels, $1, pc);
     } stat NL program
-    | TOKEN_PROC {
-        tok = $1;
-        if (yydolog) fprintf(yylog, "%3d: procedure -> %s\n", pc, $1);
-        add_sym_entry(procedures, $1, pc);
-    } NL program
     | NL program
     ;
 

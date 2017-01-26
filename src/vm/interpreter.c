@@ -62,7 +62,7 @@ do_PUSHS:
   goto dispatch;
 do_CALL:
   S_PUSH(pc);
-  pc = ex;
+  pc += 2 * (ex + 1);
   goto dispatch;
 do_RET:
   pc = S_POP();

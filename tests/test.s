@@ -1,4 +1,3 @@
-.start
 ici:  read	1000  ; Load from memory
       push	1000  ; Store
       push#	0
