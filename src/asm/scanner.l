@@ -76,7 +76,7 @@ retz {
   return TOKEN_RETZ;
 }
 
-retnz {
+retnz {
   return TOKEN_RETNZ;
 }
 
@@ -105,7 +105,7 @@ dup {
 }
 
 mswap {
-  return TOKEN_SWAP;
+  return TOKEN_MSWAP;
 }
 
 op {

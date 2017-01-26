@@ -18,7 +18,7 @@ FILE *yylog;
 
 S_TABLE *labels;
 S_TABLE *procedures;
-node *ast_head, *ast_tail;
+struct node *ast_head, *ast_tail;
 
 int pc = 0;
 int errcount = 0;
@@ -192,7 +192,7 @@ int compile(char *in, char *out, int log) {
     yyparse();
   } while (!feof(yyin));
 
-  node *p = ast_head;
+  struct node *p = ast_head;
   while ((p = p->next) != NULL) {
     errcount += emit(p, labels, procedures, yyout);
   }

@@ -18,6 +18,8 @@ void usage() {
 int main(int argc, char **argv) {
   srand(time(NULL));
 
+  printf("yo\n");
+
   int flagC = 0, flagE = 0, flagL = 0;
 
   char *in, *out = "a.out";
@@ -28,7 +30,8 @@ int main(int argc, char **argv) {
     case 3: {
       if (argv[1][0] != '-') goto error;
       char c = argv[1][1];
-      while ((c = *argv[1]++)) switch (c) {
+      while ((c = *argv[1]++)) {
+        switch (c) {
           case 'e':
             flagE++;
             break;
@@ -44,6 +47,7 @@ int main(int argc, char **argv) {
             printf("unrecognized flag '%c'\n", c);
             goto error;
         }
+      }
       in = argv[2];
     } break;
     default:

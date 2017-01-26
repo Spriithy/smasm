@@ -8,7 +8,7 @@
 #define PRC -0x02
 #define LBL -0x01
 
-typedef struct {
+struct node {
   int lno;
   int sym;
   union {
@@ -16,13 +16,13 @@ typedef struct {
     char *name;
   };
   struct node *next;
-} node;
+};
 
-node *new_node(int lno);
-node *new_ctrl(int sym, char *to, int lno);
-node *new_instr(int sym, int arg, int lno);
-node *new_ph(int sym, char *name, int lno);
+struct node *new_node(int lno);
+struct node *new_ctrl(int sym, char *to, int lno);
+struct node *new_instr(int sym, int arg, int lno);
+struct node *new_ph(int sym, char *name, int lno);
 
-int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE *f);
+int emit(struct node *n, S_TABLE *lbls, S_TABLE *prcs, FILE *f);
 
 #endif  // AST_H

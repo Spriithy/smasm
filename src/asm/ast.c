@@ -5,37 +5,37 @@
 #include "../colors.h"
 #include "../instructions.h"
 
-node *new_node(int lno) {
-  node *n = calloc(1, sizeof(node));
+struct node *new_node(int lno) {
+  struct node *n = calloc(1, sizeof(struct node));
   n->lno = lno;
   n->next = NULL;
   return n;
 }
 
-node *new_ctrl(int sym, char *to, int lno) {
-  node *n = new_node(lno);
+struct node *new_ctrl(int sym, char *to, int lno) {
+  struct node *n = new_node(lno);
   n->sym = sym;
   n->name = malloc(strlen(to) * sizeof(char));
   strcpy(n->name, to);
   return n;
 }
 
-node *new_instr(int sym, int arg, int lno) {
-  node *n = new_node(lno);
+struct node *new_instr(int sym, int arg, int lno) {
+  struct node *n = new_node(lno);
   n->sym = sym;
   n->arg = arg;
   return n;
 }
 
-node *new_ph(int sym, char *name, int lno) {
-  node *n = new_node(lno);
+struct node *new_ph(int sym, char *name, int lno) {
+  struct node *n = new_node(lno);
   n->sym = sym;
   n->name = malloc(strlen(name) * sizeof(char));
   strcpy(n->name, name);
   return n;
 }
 
-int emit(node *n, S_TABLE *lbls, S_TABLE *prcs, FILE *f) {
+int emit(struct node *n, S_TABLE *lbls, S_TABLE *prcs, FILE *f) {
   int ofs = 0;
 
   switch (n->sym) {
