@@ -14,10 +14,12 @@ FILE *vmout;
 #define S_PEEK() s->data[s->size - 1]
 
 /* The function used to execute a chunk of bytecodes */
-int execute(opcode *code) {
-  vmout = fopen("vm.log", "w");
-  if (vmout == NULL) {
-    VM_ERROR("%s", "couldn't open/create log file");
+int execute(opcode *code, int log) {
+  if (log) {
+    vmout = fopen("vm.log", "w");
+    if (vmout == NULL) {
+      VM_ERROR("%s", "couldn't open/create log file");
+    }
   }
 
   // Working out the dispatch table
@@ -31,7 +33,7 @@ int execute(opcode *code) {
 dispatch: /* will dispatch the work for the next instruction and log */
   op = code[pc];
   ex = code[pc + 1];
-  trace(pc, s->size, op, ex, S_PEEK());
+  if (log) trace(pc, s->size, op, ex, S_PEEK());
   goto *table[op];
 
 do_POP:
@@ -183,7 +185,7 @@ do_OP:
 do_ERROR:
   VM_ERROR("unknown instruction 0x%04X", op);
 
-  fclose(vmout);
+  if (log) fclose(vmout);
 do_HALT:
   return S_PEEK();
 }

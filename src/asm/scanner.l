@@ -36,7 +36,7 @@
     return TOKEN_LBL;
 }
 
-pop     {
+pop {
     return TOKEN_POP;
 }
 
@@ -52,9 +52,13 @@ ipop {
     return TOKEN_IPOP;
 }
 
+store { return TOKEN_IPOP; }
+
 ipush {
     return TOKEN_IPUSH;
 }
+
+load { return TOKEN_IPUSH; }
 
 call {
     return TOKEN_CALL;

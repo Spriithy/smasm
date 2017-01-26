@@ -1,12 +1,14 @@
-.echo        ; register echo
+jmp main
 
-.start
-do: push 10
-    pop  11
-    call echo
-    call mov ; ERROR: forward declaration needed
-    ret
+main: read 0
+      write 0
+      ; call main ; infinite loop
+exit: halt
 
-.mov
-    ret
-    
+; the previous code is equivalent to the C code
+; int main() {
+;   int i;
+;   scanf("%d", &i);
+;   printf("%d\n", i);
+;   main();
+; }

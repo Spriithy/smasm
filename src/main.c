@@ -18,8 +18,6 @@ void usage() {
 int main(int argc, char **argv) {
   srand(time(NULL));
 
-  printf("yo\n");
-
   int flagC = 0, flagE = 0, flagL = 0;
 
   char *in, *out = "a.out";
@@ -63,7 +61,7 @@ int main(int argc, char **argv) {
   if (flagE) {
     // Execute
     opcode *ops = load_file(in);
-    return execute(ops);
+    return execute(ops, flagL);
   }
 
   return 0;

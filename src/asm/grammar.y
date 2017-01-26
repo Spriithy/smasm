@@ -17,7 +17,6 @@ extern FILE *yyin, *yyout;
 FILE *yylog;
 
 S_TABLE *labels;
-S_TABLE *procedures;
 struct node *ast_head, *ast_tail;
 
 int pc = 0;
@@ -180,7 +179,6 @@ int compile(char *in, char *out, int log) {
 
   ast_head = new_ph(VOID, "<start>", 0);
   ast_tail = ast_head;
-  procedures = new_sym_table();
   labels = new_sym_table();
 
   do {
@@ -189,7 +187,7 @@ int compile(char *in, char *out, int log) {
 
   struct node *p = ast_head;
   while ((p = p->next) != NULL) {
-    errcount += emit(p, labels, procedures, yyout);
+    errcount += emit(p, labels, yyout);
   }
 
   if (errcount) {
@@ -200,10 +198,6 @@ int compile(char *in, char *out, int log) {
 
   if (log) {
     fprintf(yylog, "---[ Symbol tables ]---\n");
-    fprintf(yylog, "   PROCEDURES:\n");
-    for (int i = 0; i < procedures->size; i++)
-      fprintf(yylog, "     %s : %d\n", procedures->syms[i], procedures->ofs[i]);
-
     fprintf(yylog, "   LABELS:\n");
     for (int i = 0; i < labels->size; i++)
       fprintf(yylog, "     %s : %d\n", labels->syms[i], labels->ofs[i]);

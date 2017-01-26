@@ -5,7 +5,7 @@
 #include "../instructions.h"
 #include "memory.h"
 
-int execute(opcode *code);
+int execute(opcode *code, int log);
 void trace(int pc, int sp, opcode op, opcode ex, word top);
 
 #endif  // INTERPRETER_H

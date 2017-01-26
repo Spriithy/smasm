@@ -23,6 +23,6 @@ struct node *new_ctrl(int sym, char *to, int lno);
 struct node *new_instr(int sym, int arg, int lno);
 struct node *new_ph(int sym, char *name, int lno);
 
-int emit(struct node *n, S_TABLE *lbls, S_TABLE *prcs, FILE *f);
+int emit(struct node *n, S_TABLE *lbls, FILE *f);
 
 #endif  // AST_H
