@@ -3,13 +3,10 @@
 **/*.tab.*
 **/*.lex.*
 **/*yy*
-**/*/PARSER
-**/*/LEXER
 
 build/
 
-*.pro.user
-
+rapport.tex
 rapport.aux
 rapport.log
 rapport.synctex.gz
