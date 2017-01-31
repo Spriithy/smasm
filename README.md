@@ -4,18 +4,7 @@ Final semester project. A small assembler language compiler and the virtual mach
 
 # TODO
 
-### Overall
+## VM
 
-* [ ] Unique main file
-* [ ] Verbose modes
-
-### Compiler 
-
-* [ ] Better error handling at compile time
-* [ ] Better AST structure ?
-* [ ] Modular in/out files
-
-### VM
-
-* [ ] Full rework
+* [ ] convert to register based machine
 
