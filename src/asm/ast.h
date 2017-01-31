@@ -5,7 +5,6 @@
 #include "symtable.h"
 
 #define VOID 0xff
-#define PRC -0x02
 #define LBL -0x01
 
 struct node {

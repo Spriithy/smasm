@@ -30,8 +30,7 @@
 
 [a-zA-Z_][a-zA-Z0-9_]*":" {
     yytext[strlen(yytext) - 1] = 0;
-    yylval.ident = malloc(strlen(yytext) * sizeof(char));
-    strcpy(yylval.ident, yytext);
+    yylval.ident = strdup(yytext);
 
     return TOKEN_LBL;
 }
@@ -52,13 +51,9 @@ ipop {
     return TOKEN_IPOP;
 }
 
-store { return TOKEN_IPOP; }
-
 ipush {
     return TOKEN_IPUSH;
 }
-
-load { return TOKEN_IPUSH; }
 
 call {
     return TOKEN_CALL;
@@ -92,6 +87,14 @@ read {
     return TOKEN_READ;
 }
 
+putc {
+    return TOKEN_PUTC;
+}
+
+getc {
+    return TOKEN_GETC;
+}
+
 rand {
     return TOKEN_RAND;
 }
@@ -113,8 +116,7 @@ halt {
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-    yylval.ident = malloc(strlen(yytext) * sizeof(char));
-    strcpy(yylval.ident, yytext);
+    yylval.ident = strdup(yytext);
     return IDENT;
 }
 

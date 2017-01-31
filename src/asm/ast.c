@@ -15,8 +15,7 @@ struct node *new_node(int lno) {
 struct node *new_ctrl(int sym, char *to, int lno) {
   struct node *n = new_node(lno);
   n->sym = sym;
-  n->name = malloc(strlen(to) * sizeof(char));
-  strcpy(n->name, to);
+  n->name = strdup(to);
   return n;
 }
 
@@ -30,8 +29,7 @@ struct node *new_instr(int sym, int arg, int lno) {
 struct node *new_ph(int sym, char *name, int lno) {
   struct node *n = new_node(lno);
   n->sym = sym;
-  n->name = malloc(strlen(name) * sizeof(char));
-  strcpy(n->name, name);
+  n->name = strdup(name);
   return n;
 }
 

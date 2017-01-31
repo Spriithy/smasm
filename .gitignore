@@ -9,3 +9,11 @@
 build/
 
 *.pro.user
+
+rapport.aux
+rapport.log
+rapport.synctex.gz
+
+vm.log
+a.out
+smasm

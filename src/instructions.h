@@ -25,6 +25,8 @@ typedef int16_t opcode;
 #define MSWAP 0x10
 #define RETZ 0x11
 #define RETNZ 0x12
+#define GETC 0x13
+#define PUTC 0x14
 #define HALT 0x63
 
 #endif  // INSTRUCTIONS_H

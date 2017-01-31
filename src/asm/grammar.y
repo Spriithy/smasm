@@ -35,7 +35,7 @@ char *tok;
 %token <ident> IDENT TOKEN_LBL
 %token <ident> TOKEN_POP TOKEN_IPOP TOKEN_PUSH TOKEN_IPUSH TOKEN_PUSHS
 %token <ident> TOKEN_CALL TOKEN_RET TOKEN_RETZ TOKEN_RETNZ TOKEN_JPC TOKEN_JMP
-%token <ident> TOKEN_READ TOKEN_WRITE TOKEN_MSWAP
+%token <ident> TOKEN_READ TOKEN_WRITE TOKEN_GETC TOKEN_PUTC TOKEN_MSWAP
 %token <ident> TOKEN_RAND TOKEN_DUP TOKEN_OP TOKEN_HALT
 
 %token NL
@@ -68,7 +68,7 @@ stat
     }
     | TOKEN_PUSHS INT {
         tok = $1;
-        if (yydolog) fprintf(yylog, "%3d: push %d\n", pc, $2);
+        if (yydolog) fprintf(yylog, "%3d: push# %d\n", pc, $2);
         ast_tail->next = new_instr(PUSHS, $2, pc++);
         ast_tail = ast_tail->next;
     }
@@ -138,6 +138,18 @@ stat
         ast_tail->next = new_instr(RND, $2, pc++);
         ast_tail = ast_tail->next;
     }
+    | TOKEN_GETC {
+      tok = $1;
+      if (yydolog) fprintf(yylog, "%3d: getc\n", pc);
+      ast_tail->next = new_instr(GETC, 0, pc++);
+      ast_tail = ast_tail->next;
+    }
+    | TOKEN_PUTC {
+      tok = $1;
+      if (yydolog) fprintf(yylog, "%3d: putc\n", pc);
+      ast_tail->next = new_instr(PUTC, 0, pc++);
+      ast_tail = ast_tail->next;
+    }
     | TOKEN_DUP {
         tok = $1;
         if (yydolog) fprintf(yylog, "%3d: dup\n", pc);
@@ -172,7 +184,7 @@ int compile(char *in, char *out, int log) {
   yyin = fopen(in, "r");
   yyout = fopen(out, "w+");
   if (log) yylog = fopen("asm.comp.log", "w+");
-
+  
   if (yyin == NULL) { ERROR("couldn't open/read source file '%s'", in); }
   if (yyout == NULL) { ERROR("couldn't create/open file '%s'", out); }
   if (log) if (yylog == NULL) { ERROR("%s", "couldn't create/open file 'asm.comp.log'"); }
@@ -212,7 +224,7 @@ int compile(char *in, char *out, int log) {
 
 yyerror(const char *s) {
     errcount++;
-    printf(COLOR_RED "error:" COLOR_YELLOW "%d:" COLOR_NONE " %s. Unexpected token after '"
+    printf(COLOR_RED "error:" COLOR_NONE "%d: %s. Unexpected token after '"
         COLOR_GREEN "%s" COLOR_NONE "'\n", yylineno, s, tok);
     return 1;
 }

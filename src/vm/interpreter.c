@@ -1,6 +1,7 @@
 #include "interpreter.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "../instructions.h"
 #include "dispatch.h"
 #include "log.h"
@@ -29,6 +30,8 @@ int execute(opcode *code, int log) {
   opcode op = 0, ex = 0, u, v, w;
   word mem[4000] = {0};
   word pc = 0;
+  char buf[3];
+  time_t t;
 
 dispatch: /* will dispatch the work for the next instruction and log */
   op = code[pc];
@@ -47,33 +50,39 @@ do_PUSH:
   pc += 2;
   goto dispatch;
 do_IPOP:
+do_STORE:
   u = S_POP();
   v = S_POP();
   mem[u] = v;
-  pc++;
+  pc += 2;
   goto dispatch;
 do_IPUSH:
+do_LOAD:
   u = S_POP();
   v = mem[u];
   S_PUSH(v);
-  pc++;
+  pc += 2;
   goto dispatch;
 do_PUSHS:
   S_PUSH(ex);
   pc += 2;
   goto dispatch;
 do_CALL:
+  if (log) fprintf(vmout, "CALLING PROCEDURE: offset %d\n", ex + 1);
   S_PUSH(pc);
   pc += 2 * (ex + 1);
   goto dispatch;
 do_RET:
-  pc = S_POP();
+  if (log)
+    fprintf(vmout, "RETURNING FROM PROCEDURE: back to PC=%d\n",
+            S_PEEK() / 2 + 1);
+  pc = S_POP() + 2;
   goto dispatch;
 do_RETZ:
-  if (S_POP()) pc = S_POP();
+  if (S_POP()) goto do_RET;
   goto dispatch;
 do_RETNZ:
-  if (!S_POP()) pc = S_POP();
+  if (!S_POP()) goto do_RET;
   goto dispatch;
 do_JMP:
   pc += 2 * (ex + 1);
@@ -86,28 +95,39 @@ do_JPC:
   pc += 2;
   goto dispatch;
 do_WRITE:
-  printf("%hd\n", mem[ex]);
+  printf("%hd", mem[ex]);
   pc += 2;
   goto dispatch;
 do_READ:
   scanf("%hd", &mem[ex]);
   pc += 2;
   goto dispatch;
+do_GETC:
+  fgets(buf, 3, stdin);
+  S_PUSH(buf[0]);
+  pc += 2;
+  goto dispatch;
+do_PUTC:
+  printf("%c", S_POP());
+  pc += 2;
+  goto dispatch;
 do_RND:
-  // TODO
+  srand((unsigned)time(&t));
+  S_PUSH(rand() % (ex - 1));
   pc += 2;
   goto dispatch;
 do_DUP:
   u = S_PEEK();
   S_PUSH(u);
-  pc++;
+  pc += 2;
+  goto dispatch;
 do_MSWAP:
   u = S_POP();
   v = S_POP();
   w = mem[u];
   mem[u] = mem[v];
   mem[v] = w;
-  pc++;
+  pc += 2;
   goto dispatch;
 do_OP:
   u = S_POP();
@@ -191,6 +211,6 @@ do_HALT:
 }
 
 void trace(int pc, int sp, opcode op, opcode ex, word top) {
-  fprintf(vmout, "pc=%d:\tsp=%d, top=%hd\n", pc, sp, top);
-  fprintf(vmout, "\texec=0x%04X next=0x%04X\n", op, ex);
+  fprintf(vmout, "pc=%-4d\tsp=%d, top=%hd\n", pc / 2, sp, top);
+  // fprintf(vmout, "\texec=0x%04X(0x%04X=%d)\n", op, ex, ex);
 }
