@@ -211,6 +211,6 @@ do_HALT:
 }
 
 void trace(int pc, int sp, opcode op, opcode ex, word top) {
-  fprintf(vmout, "pc=%-4d\tsp=%d, top=%hd\n", pc / 2, sp, top);
-  // fprintf(vmout, "\texec=0x%04X(0x%04X=%d)\n", op, ex, ex);
+  fprintf(vmout, "pc=%-4d\tsp=%-4d\ttop=%-8hd\t", pc / 2, sp, top);
+  fprintf(vmout, "[%04X](%d)\n", op, ex);
 }

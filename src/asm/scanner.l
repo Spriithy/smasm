@@ -18,7 +18,7 @@
     return NL;
 }
 
-[0-9]+ {
+-?[0-9]+ {
     sscanf(yytext, "%d", &yylval.num);
     return INT;
 }

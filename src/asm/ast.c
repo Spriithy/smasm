@@ -1,4 +1,5 @@
 #include "ast.h"
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +47,9 @@ int emit(struct node *n, S_TABLE *lbls, FILE *f) {
     case READ:
     case RND:
     case OP:
-      fprintf(f, "%02X %02X %02X\n", n->sym, (n->arg >> 8) & 0xff,
+    case -JMP:
+    case -JPC:
+      fprintf(f, "%02X %02X %02X\n", abs(n->sym), (n->arg >> 8) & 0xff,
               n->arg & 0xff);
       return 0;
     case CALL:

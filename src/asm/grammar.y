@@ -114,10 +114,22 @@ stat
         ast_tail->next = new_ctrl(JMP, $2, pc++);
         ast_tail = ast_tail->next;
     }
+    | TOKEN_JMP INT {
+      tok = $1;
+      if (yydolog) fprintf(yylog, "%3d: jmp %d\n", pc, $2);
+      ast_tail->next = new_instr(-JMP, $2, pc++);
+      ast_tail = ast_tail->next;
+    }
     | TOKEN_JPC IDENT {
         tok = $2;
         if (yydolog) fprintf(yylog, "%3d: jpc %s\n", pc, $2);
         ast_tail->next = new_ctrl(JPC, $2, pc++);
+        ast_tail = ast_tail->next;
+    }
+    | TOKEN_JPC INT {
+        tok = $1;
+        if (yydolog) fprintf(yylog, "%3d: jpc %d\n", pc, $2);
+        ast_tail->next = new_instr(-JPC, $2, pc++);
         ast_tail = ast_tail->next;
     }
     | TOKEN_WRITE INT {
@@ -184,7 +196,7 @@ int compile(char *in, char *out, int log) {
   yyin = fopen(in, "r");
   yyout = fopen(out, "w+");
   if (log) yylog = fopen("asm.comp.log", "w+");
-  
+
   if (yyin == NULL) { ERROR("couldn't open/read source file '%s'", in); }
   if (yyout == NULL) { ERROR("couldn't create/open file '%s'", out); }
   if (log) if (yylog == NULL) { ERROR("%s", "couldn't create/open file 'asm.comp.log'"); }
