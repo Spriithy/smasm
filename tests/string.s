@@ -28,15 +28,15 @@ _L1:  pop 3001  ; l'adresse courrante de la chaine de caractères
       jmp _L1
 _L2:  push# 0
       push 3001
-      ipop
+      iPop
       pop 3001
       push 3000
       ret
-      
+
 puts: pop 3000  ; return address
 _L3:  pop 3001  ; string address
       push 3001
-      ipush
+      iPush
       dup
       jpc _L4   ; print it if it is not the null byte
       pop 3001

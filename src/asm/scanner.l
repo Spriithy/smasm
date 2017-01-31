@@ -47,11 +47,11 @@ push {
     return TOKEN_PUSH;
 }
 
-ipop {
+i[pP]op {
     return TOKEN_IPOP;
 }
 
-ipush {
+i[pP]ush {
     return TOKEN_IPUSH;
 }
 
@@ -95,7 +95,7 @@ getc {
     return TOKEN_GETC;
 }
 
-rand {
+rnd {
     return TOKEN_RAND;
 }
 
