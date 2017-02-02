@@ -11,7 +11,7 @@ rapport.aux
 rapport.log
 rapport.synctex.gz
 
-**/*/log
+**/*/*.log
 
 vm.log
 a.out
