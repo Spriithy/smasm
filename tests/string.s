@@ -14,7 +14,7 @@ main: push# 0
       ret
 
 gets: pop 3000
-_L1:  pop 3001  ; l'adresse courrante de la chaine de caractères
+_L1:  pop 3001  ; l'adresse courrante de la chaine de caracteres
       getc
       dup
       push# 10
