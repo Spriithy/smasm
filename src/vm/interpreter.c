@@ -31,7 +31,6 @@ int execute(opcode *code, int log) {
   word mem[4000] = {0};
   word pc = 0;
   char buf[3];
-  time_t t;
 
 dispatch: /* will dispatch the work for the next instruction and log */
   op = code[pc];
@@ -112,7 +111,7 @@ do_PUTC:
   pc += 2;
   goto dispatch;
 do_RND:
-  srand((unsigned)time(&t));
+  srand(time(NULL));
   S_PUSH(rand() % (ex - 1));
   pc += 2;
   goto dispatch;

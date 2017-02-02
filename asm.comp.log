@@ -1,92 +1,12 @@
   0: call main
   1: halt
   2: label -> main
-  2: push# 0
-  3: call gets
-  4: push# 0
-  5: call puts
-  6: call ln
-  7: push# 0
-  8: call strlen
-  9: pop 1000
- 10: write 1000
- 11: call ln
- 12: ret
- 13: label -> gets
- 13: pop 3000
- 14: label -> _L1
- 14: pop 3001
- 15: getc
- 16: dup
- 17: push# 10
- 18: op 0
- 19: jpc _L2
- 20: push 3001
- 21: ipop
- 22: push 3001
- 23: push# 1
- 24: op 11
- 25: jmp _L1
- 26: label -> _L2
- 26: push# 0
- 27: push 3001
- 28: ipop
- 29: pop 3001
- 30: push 3000
- 31: ret
- 32: label -> puts
- 32: pop 3000
- 33: label -> _L3
- 33: pop 3001
- 34: push 3001
- 35: ipush
- 36: dup
- 37: jpc _L4
- 38: pop 3001
- 39: push 3000
- 40: ret
- 41: label -> _L4
- 41: putc
- 42: push 3001
- 43: push# 1
- 44: op 11
- 45: jmp _L3
- 46: label -> ln
- 46: push# 10
- 47: putc
- 48: ret
- 49: label -> strlen
- 49: pop 3000
- 50: pop 3001
- 51: push# 0
- 52: pop 3002
- 53: label -> _L5
- 53: push 3001
- 54: ipush
- 55: jpc _L6
- 56: push 3002
- 57: push 3000
- 58: ret
- 59: label -> _L6
- 59: push 3001
- 60: push# 1
- 61: op 11
- 62: pop 3001
- 63: push 3002
- 64: push# 1
- 65: op 11
- 66: pop 3002
- 67: jmp _L5
+  2: rand 100
+  3: pop 0
+  4: write 0
+  5: push# 10
+  6: putc
+  7: ret
 ---[ Symbol tables ]---
    LABELS:
      main : 2
-     gets : 13
-     _L1 : 14
-     _L2 : 26
-     puts : 32
-     _L3 : 33
-     _L4 : 41
-     ln : 46
-     strlen : 49
-     _L5 : 53
-     _L6 : 59
